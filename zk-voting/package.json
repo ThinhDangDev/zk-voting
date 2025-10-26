@@ -1,0 +1,51 @@
+{
+  "name": "atbash-evm",
+  "version": "1.0.8",
+  "description": "A Zk Voting protocol",
+  "main": "dist/src/index.js",
+  "publishConfig": {
+    "access": "public",
+    "registry": "https://registry.npmjs.org/"
+  },
+  "scripts": {
+    "compile": "hardhat compile",
+    "clean": "rm -rf ./dist",
+    "build": "yarn clean hardhat compile && tsc",
+    "test:lib": "yarn build && hardhat test test/lib.test.ts",
+    "test:contract": "hardhat test test/Atbash.ts",
+    "docs": "typedoc --excludePrivate --excludeProtected ./index.ts",
+    "ci:docs": "yarn docs && gh-pages -d docs"
+  },
+  "devDependencies": {
+    "@nomicfoundation/hardhat-chai-matchers": "^2.0.0",
+    "@nomicfoundation/hardhat-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-network-helpers": "^1.0.0",
+    "@nomicfoundation/hardhat-toolbox": "^3.0.0",
+    "@nomicfoundation/hardhat-verify": "^1.0.0",
+    "@typechain/ethers-v6": "^0.4.0",
+    "@typechain/hardhat": "^8.0.0",
+    "@types/chai": "^4.2.0",
+    "@types/mocha": ">=9.1.0",
+    "@types/node": "^20.5.7",
+    "chai": "^4.2.0",
+    "dotenv": "^16.3.1",
+    "gh-pages": "^6.0.0",
+    "hardhat": "^2.19.4",
+    "hardhat-abi-exporter": "^2.10.1",
+    "hardhat-gas-reporter": "^1.0.8",
+    "nodemon": "^3.0.1",
+    "rimraf": "^5.0.5",
+    "solidity-coverage": "^0.8.1",
+    "ts-node": "^10.9.1",
+    "typechain": "^8.2.0",
+    "typedoc": "^0.25.2",
+    "typescript": "^5.2.2"
+  },
+  "dependencies": {
+    "@noble/secp256k1": "^1.7.1",
+    "@openzeppelin/contracts": "^5.0.0",
+    "ethers": "^6.8.0",
+    "viem": "^1.20.3",
+    "vrc25": "^1.0.2"
+  }
+}

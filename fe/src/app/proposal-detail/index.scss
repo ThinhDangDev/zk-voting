@@ -1,0 +1,48 @@
+.banner-campaign{
+    &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.4);
+  }
+}
+
+.candidate-card {
+    color: #fff;
+    cursor: pointer;
+    overflow: hidden;
+
+    .candidate-card-body {
+      position: absolute;
+      width: 100%;
+      bottom: 0;
+      transform: translateY(100%);
+      transition: all 0.2s ease-out;
+      background-color: rgba(46, 46, 46, 0.5);
+      color: #fff;
+      border: 0;
+    }
+  
+    &:hover {
+      img {
+        filter: brightness(0.6);
+      }
+      .candidate-header {
+        display: none;
+      }
+      .candidate-card-body {
+        position: absolute;
+        width: 100%;
+        bottom: 0;
+        transform: translateY(0);
+        transition: all 0.2s ease-out;
+        background-color: rgba(46, 46, 46, 0.5);
+        color: #fff;
+        border: 0;
+        z-index: 30;
+        border-radius: 10px 10px 0 0;
+      }
+    }
+  }

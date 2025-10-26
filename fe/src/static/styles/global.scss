@@ -1,0 +1,20 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@import '@rainbow-me/rainbowkit/styles.css';
+@import './scrollbar.scss';
+@import './typography.scss';
+
+html {
+  font-family: 'Satoshi', sans-serif;
+  font-size: 14px;
+  @screen md {
+    font-size: 16px;
+  }
+}
+
+.btn[disabled] {
+  background: #97928a;
+  cursor: not-allowed !important;
+}

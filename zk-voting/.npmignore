@@ -1,0 +1,21 @@
+node_modules
+.npmrc
+.github
+
+.env
+coverage
+coverage.json
+typechain
+typechain-types
+
+# Hardhat files
+cache
+artifacts
+
+# Misc
+.DS_Store
+
+# Build
+docs
+test
+scipts
