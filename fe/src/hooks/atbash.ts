@@ -11,7 +11,11 @@ import { hexToBytes } from 'viem'
 import axios from 'axios'
 import useSWR from 'swr'
 import { bytesToHex } from 'viem'
-import { Leaf, MerkleDistributor } from 'atbash-evm'
+// import { Leaf, MerkleDistributor } from 'atbash-evm'
+import {
+  Leaf as ZKLeaf,
+  MerkleDistributor as ZKMerkleDistributor,
+} from '@thinhdang1402/zk-voting'
 import { createGlobalState, useAsync } from 'react-use'
 import { CandidateMetadata, InitProposalProps, Proposal } from '@/types'
 import { BSGS, decrypt, randomNumber } from '@/helpers/utils'
@@ -178,11 +182,15 @@ export const useVote = (proposalId: number, votFor: string) => {
     try {
       if (!walletAddress) throw new Error('Please connect wallet first!')
       // if (!metadata?.merkleBuff) throw new Error('Merkle root not found!')
-      const merkleRoot = metadata?.merkleBuff
-        ? metadata.merkleBuff.data
-        : proposal.merkleRoot
-      const merkle = MerkleDistributor.fromBuffer(Buffer.from(merkleRoot))
-      const proof = merkle.prove(new Leaf(walletAddress))
+      // const merkleRoot = metadata?.merkleBuff
+      //   ? metadata.merkleBuff.data
+      //   : proposal.merkleRoot
+      const merkleRoot = proposal.merkleRoot
+      console.log('merkleRoot', merkleRoot)
+      const merkle = ZKMerkleDistributor.fromBuffer(Buffer.from(merkleRoot))
+      console.log('merkle', merkle)
+      const proof = merkle.prove(new ZKLeaf(walletAddress))
+      console.log('proof', proof)
 
       const candidates = proposal?.candidates || []
       const zero = secp256k1.Point.ZERO

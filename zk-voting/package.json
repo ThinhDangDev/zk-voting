@@ -1,8 +1,30 @@
 {
-  "name": "atbash-evm",
-  "version": "1.0.8",
-  "description": "A Zk Voting protocol",
-  "main": "dist/src/index.js",
+  "name": "@thinhdang1402/zk-voting",
+  "version": "1.0.1",
+  "description": "A Zero-Knowledge Voting protocol for EVM-compatible blockchains",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "zk",
+    "zero-knowledge",
+    "voting",
+    "blockchain",
+    "ethereum",
+    "evm",
+    "merkle-tree",
+    "cryptography"
+  ],
+  "author": "thinhdang1402",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/thinhdang1402/zk-voting.git"
+  },
   "publishConfig": {
     "access": "public",
     "registry": "https://registry.npmjs.org/"
@@ -42,7 +64,7 @@
     "typescript": "^5.2.2"
   },
   "dependencies": {
-    "@noble/secp256k1": "^1.7.1",
+    "@noble/secp256k1": "^3.0.0",
     "@openzeppelin/contracts": "^5.0.0",
     "ethers": "^6.8.0",
     "viem": "^1.20.3",

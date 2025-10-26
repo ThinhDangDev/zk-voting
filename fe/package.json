@@ -13,6 +13,7 @@
   "dependencies": {
     "@headlessui/react": "^1.7.17",
     "@rainbow-me/rainbowkit": "^1.3.1",
+    "@thinhdang1402/zk-voting": "^1.0.0",
     "antd": "^5.12.4",
     "atbash-evm": "^1.0.8",
     "axios": "^1.6.2",

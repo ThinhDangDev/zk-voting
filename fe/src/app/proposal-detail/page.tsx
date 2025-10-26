@@ -23,13 +23,12 @@ export default function ProposalDetail() {
   console.log('proposal', proposal)
   console.log('address', address)
 
-  const { title, description, image, candidateMetadata } =
-    metadata?.proposalMetadata || {
-      title: '',
-      description: '',
-      image: '',
-      candidateMetadata: {},
-    }
+  const { title, description, image } = metadata?.proposalMetadata || {
+    title: '',
+    description: '',
+    image: '',
+    candidateMetadata: {},
+  }
 
   // Use proposal to map candidate addresses
   const candidateAddresses = proposal?.candidates || []

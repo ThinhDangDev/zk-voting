@@ -14,6 +14,6 @@
 		"removeComments": true,
     "resolveJsonModule": true
   },
-	"include": ["index.ts", "src", "abi"],
+	"include": ["src/**/*", "index.ts"],
   "exclude": ["node_modules", "dist"]
 }

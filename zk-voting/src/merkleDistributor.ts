@@ -50,28 +50,48 @@ export class MerkleDistributor {
    */
   prove(leaf: Leaf) {
     let proof: Node[] = []
-    let node = new Node(leaf.value)
-    let siblings = this.leaves.map((leaf) => new Node(leaf.value))
-    while (!node.eq(this.root)) {
-      // Find my sibling
-      const index = siblings.findIndex((sibling) => node.eq(sibling))
-      if (index === -1) throw new Error('The leaf is not valid.')
-      let sibling: Node | undefined = undefined
-      if (index % 2 === 1) sibling = siblings[index - 1]
-      else if (index + 1 < siblings.length) sibling = siblings[index + 1]
-      if (sibling) {
-        node = node.hash(sibling)
-        proof.push(sibling)
+    let currentLevel = this.leaves.map((leaf) => new Node(leaf.value))
+    let targetNode = new Node(leaf.value)
+
+    while (currentLevel.length > 1) {
+      const nextLevel: Node[] = []
+      let foundTarget = false
+
+      for (let i = 0; i < currentLevel.length; i += 2) {
+        const left = currentLevel[i]
+        const right = currentLevel[i + 1]
+
+        if (right) {
+          // Both left and right exist
+          const parent = left.hash(right)
+          nextLevel.push(parent)
+
+          // Check if target is in this pair
+          if (targetNode.eq(left)) {
+            proof.push(right) // Add right sibling to proof
+            targetNode = parent
+            foundTarget = true
+          } else if (targetNode.eq(right)) {
+            proof.push(left) // Add left sibling to proof
+            targetNode = parent
+            foundTarget = true
+          }
+        } else {
+          // Only left exists (odd number of nodes)
+          nextLevel.push(left)
+          if (targetNode.eq(left)) {
+            foundTarget = true
+          }
+        }
       }
-      // Move to upper level
-      const cache: Node[] = []
-      for (let i = 0; i < siblings.length; i += 2) {
-        if (i + 1 < siblings.length)
-          cache.push(siblings[i].hash(siblings[i + 1]))
-        else cache.push(siblings[i])
+
+      if (!foundTarget) {
+        throw new Error('The leaf is not valid.')
       }
-      siblings = cache
+
+      currentLevel = nextLevel
     }
+
     return proof
   }
 
@@ -83,7 +103,15 @@ export class MerkleDistributor {
    */
   verify(leaf: Leaf, proof: Node[]) {
     let node = new Node(leaf.value)
-    for (let i = 0; i < proof.length; i++) node = node.hash(proof[i])
+    let proofIndex = 0
+
+    // Reconstruct the path to root using the proof
+    while (proofIndex < proof.length) {
+      const sibling = proof[proofIndex]
+      node = node.hash(sibling)
+      proofIndex++
+    }
+
     return this.root.eq(node)
   }
 
@@ -94,7 +122,9 @@ export class MerkleDistributor {
   static fromBuffer = (buf: Buffer): MerkleDistributor => {
     let re: Leaf[] = []
     for (let i = 0; i < buf.length; i = i + 20)
-      re.push(MerkleDistributor.deserialize(buf.subarray(i, i + 20)))
+      re.push(
+        MerkleDistributor.deserialize(new Uint8Array(buf.subarray(i, i + 20))),
+      )
     return new MerkleDistributor(re)
   }
 }
