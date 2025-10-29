@@ -840,10 +840,10 @@
     "@tanstack/query-core" "4.36.1"
     use-sync-external-store "^1.2.0"
 
-"@thinhdang1402/zk-voting@^1.0.0":
-  version "1.0.0"
-  resolved "https://registry.yarnpkg.com/@thinhdang1402/zk-voting/-/zk-voting-1.0.0.tgz#4200d216ba6481c978ea1d8e9dc3b96f5593173a"
-  integrity sha512-pNlddN1TYfpRLMq6B/XbLjxn2qKRrZAOEEQRJIHltBW5CFW1GYHS9H5h0EklQUmFdEac7VISGl4HP+xw4Sak/A==
+"@thinhdang1402/zk-voting@^1.0.1":
+  version "1.0.1"
+  resolved "https://registry.yarnpkg.com/@thinhdang1402/zk-voting/-/zk-voting-1.0.1.tgz#7e816f2e5b094d206bd301b063f437616bf774b3"
+  integrity sha512-FRwWBqbYGv9vSKp9r5Ve1rYBRYPfgKYZB42/+df8U2hh0ysAPLKs44bQsfKwWjftk3lAFHiAxRBYdcHf3spFgQ==
   dependencies:
     "@noble/secp256k1" "^3.0.0"
     "@openzeppelin/contracts" "^5.0.0"

@@ -11,6 +11,7 @@ import {
   useGetWinner,
   useMetadata,
   useProposalData,
+  useResults,
   useWinner,
 } from '@/hooks/atbash'
 
@@ -28,6 +29,7 @@ export default function GetResult({ proposalId }: GetResultProps) {
   const { metadata } = useMetadata(proposalId)
   const winner = useWinner(proposalId)
 
+  console.log('isGetResult', isGetResult)
   // Get candidate addresses from metadata
   const candidateAddresses = Object.keys(
     metadata?.proposalMetadata?.candidateMetadata || {},

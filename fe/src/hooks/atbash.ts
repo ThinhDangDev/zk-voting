@@ -11,6 +11,7 @@ import { hexToBytes } from 'viem'
 import axios from 'axios'
 import useSWR from 'swr'
 import { bytesToHex } from 'viem'
+import { apiConfig } from '@/configs/env'
 // import { Leaf, MerkleDistributor } from 'atbash-evm'
 import {
   Leaf as ZKLeaf,
@@ -18,7 +19,7 @@ import {
 } from '@thinhdang1402/zk-voting'
 import { createGlobalState, useAsync } from 'react-use'
 import { CandidateMetadata, InitProposalProps, Proposal } from '@/types'
-import { BSGS, decrypt, randomNumber } from '@/helpers/utils'
+import { BSGS, BSGS2, decrypt, privateKey, randomNumber } from '@/helpers/utils'
 import { toFilename, uploadFileToSupabase } from '@/helpers/upload'
 import { useMerkleDistributor } from './merkle'
 import { usePubkey } from './identity'
@@ -26,6 +27,7 @@ import ZKVotingAbi from '@/static/abi/ZKVoting.json'
 import { DEFAULT_PROPOSAL } from '@/constants'
 import { config } from '@/configs/contract'
 import { JsonRpcProvider } from 'ethers'
+import { ZkVoting } from '@thinhdang1402/zk-voting'
 
 export const useAtbashContract = () => {
   const atbash = useMemo((): {
@@ -68,20 +70,38 @@ export const useMetadata = (proposalId: number) => {
   const { metadata } = useProposalData(proposalId) || { metadata: '' }
 
   const fetcher = useCallback(async ([metadata]: [any]) => {
-    if (!metadata) return
-    const cid = encode(new Uint8Array(Buffer.from(hexToBytes(metadata))))
-    const fileName = toFilename(cid)
-    const url =
-      'https://hnreqcvgchtokkqynbli.supabase.co/storage/v1/object/public/atbash/public/' +
-      fileName
-    const { data } = await axios.get(url)
+    if (!metadata) return null
 
-    return data
+    try {
+      // Convert hex bytes32 from contract to CID
+      const metadataBytes = hexToBytes(metadata)
+      const cid = encode(new Uint8Array(Buffer.from(metadataBytes)))
+      const fileName = toFilename(cid)
+      const url = `${apiConfig.supabaseUrl}/storage/v1/object/public/${apiConfig.bucket}/public/${fileName}`
+
+      const { data } = await axios.get(url)
+
+      // If merkleBuff is base64, convert it back to Buffer format for compatibility
+      if (data?.merkleBuff && typeof data.merkleBuff === 'string') {
+        data.merkleBuff = Buffer.from(data.merkleBuff, 'base64')
+      }
+
+      return data
+    } catch (error: any) {
+      console.error('Failed to fetch metadata:', error)
+      console.error('Error details:', {
+        status: error.response?.status,
+        statusText: error.response?.statusText,
+        data: error.response?.data,
+        url: error.config?.url,
+      })
+      throw new Error(`Failed to retrieve metadata: ${error.message || error}`)
+    }
   }, [])
 
-  const { data, isLoading } = useSWR([metadata], fetcher)
+  const { data, isLoading, error } = useSWR([metadata], fetcher)
 
-  return { metadata: data, isLoading }
+  return { metadata: data, isLoading, error }
 }
 
 export const useWalletNonce = () => {
@@ -127,15 +147,44 @@ export const useInitProposal = (props: InitProposalProps) => {
   const initProposal = useCallback(async () => {
     if (!walletAddress) throw new Error('Please connect wallet first!')
     const { startTime, endTime, candidates, proposalMetadata } = props
+
+    // Validate required data
+    if (!candidates || candidates.length === 0) {
+      throw new Error('Candidates are required')
+    }
+    if (!startTime || !endTime) {
+      throw new Error('Start and end times are required')
+    }
+
     const root = merkleDistributor.root.value
     const merkleBuff = merkleDistributor.toBuffer()
-    const blob = [
-      new Blob([JSON.stringify({ proposalMetadata, merkleBuff }, null, 2)], {
-        type: 'application/json',
-      }),
-    ]
-    const file = new File(blob, 'metadata.txt')
-    const cid = await uploadFileToSupabase(file)
+
+    // Convert Buffer to base64 string for JSON serialization
+    const merkleBuffBase64 = merkleBuff.toString('base64')
+
+    // Create metadata object with serializable merkleBuff
+    const metadataPayload = {
+      proposalMetadata,
+      merkleBuff: merkleBuffBase64,
+    }
+
+    // Create File from Blob with proper JSON stringification
+    const blob = new Blob([JSON.stringify(metadataPayload, null, 2)], {
+      type: 'application/json',
+    })
+    const file = new File([blob], 'metadata.json', { type: 'application/json' })
+
+    // Upload metadata and get CID
+    let cid: string
+    try {
+      cid = await uploadFileToSupabase(file)
+      if (!cid) {
+        throw new Error('Upload returned empty CID')
+      }
+    } catch (error: any) {
+      throw new Error(`Failed to upload metadata: ${error.message || error}`)
+    }
+
     const zero = secp256k1.Point.ZERO
     const randomsNumber: bigint[] = []
     const ballotBoxes = candidates.map(() => {
@@ -149,7 +198,7 @@ export const useInitProposal = (props: InitProposalProps) => {
     const tx = await writeAsync({
       args: [
         bytesToHex(root),
-        bytesToHex(decode(cid)),
+        bytesToHex(decode(cid)), // Use actual CID instead of hardcoded 'asd'
         BigInt(Math.floor(startTime / 1000)),
         BigInt(Math.floor(endTime / 1000)),
         commitment,
@@ -181,16 +230,33 @@ export const useVote = (proposalId: number, votFor: string) => {
   const onVote = useCallback(async () => {
     try {
       if (!walletAddress) throw new Error('Please connect wallet first!')
-      // if (!metadata?.merkleBuff) throw new Error('Merkle root not found!')
-      // const merkleRoot = metadata?.merkleBuff
-      //   ? metadata.merkleBuff.data
-      //   : proposal.merkleRoot
-      const merkleRoot = proposal.merkleRoot
-      console.log('merkleRoot', merkleRoot)
-      const merkle = ZKMerkleDistributor.fromBuffer(Buffer.from(merkleRoot))
-      console.log('merkle', merkle)
+
+      // Validate wallet address format
+      if (!walletAddress.startsWith('0x') || walletAddress.length !== 42) {
+        throw new Error(`Invalid wallet address format: ${walletAddress}`)
+      }
+
+      // Use merkleBuff from metadata to reconstruct merkle tree for proof generation
+      // The merkleRoot on proposal is just the hash; we need the full tree data for proofs
+      if (!metadata?.merkleBuff) {
+        throw new Error('Merkle distributor data not found in metadata!')
+      }
+
+      // merkleBuff is now a Buffer (converted from base64 in useMetadata)
+      const merkleBuff =
+        metadata.merkleBuff instanceof Buffer
+          ? metadata.merkleBuff
+          : Buffer.from(metadata.merkleBuff, 'base64')
+
+      // Verify merkle root matches
+      const merkle = ZKMerkleDistributor.fromBuffer(merkleBuff)
+      const computedRoot = bytesToHex(merkle.root.value)
+      const contractRoot = proposal.merkleRoot
+
+      if (computedRoot !== contractRoot) {
+        throw new Error('Merkle root mismatch between metadata and contract!')
+      }
       const proof = merkle.prove(new ZKLeaf(walletAddress))
-      console.log('proof', proof)
 
       const candidates = proposal?.candidates || []
       const zero = secp256k1.Point.ZERO
@@ -253,31 +319,39 @@ export const useGetWinner = (proposalId: number) => {
   const getWinner = useCallback(async () => {
     if (!proposal) throw new Error('Proposal not found')
 
-    const end = Number(proposal.endDate) * 1000
-    if (Date.now() < end) throw new Error("The campaign isn't end!")
-
+    const ballotBoxesDecrypted: secp256k1.Point[] = []
     const P = secp256k1.Point.BASE
-    const decryptedPoints = await Promise.all(
-      proposal.ballotBoxes.map(async ({ x, y }, i) => {
-        const C = new secp256k1.Point(x, y)
-        const R = P.multiply(proposal.randomNumbers[i])
-        const M = await decrypt(C, R)
-        return new secp256k1.Point(BigInt(M.x), BigInt(M.y))
-      }),
-    )
 
-    const totalBallot: number[] = await BSGS(decryptedPoints, 100)
+    proposal.ballotBoxes.forEach(({ x, y }, i) => {
+      const C = new secp256k1.Point(x, y, 1n)
+      const R = P.multiply(proposal.randomNumbers[i])
+      const M = C.subtract(R.multiply(privateKey)) //M = C - R * x
+      ballotBoxesDecrypted.push(M)
+    })
+    console.log('proposal', proposal)
+    console.log('ballotBoxesDecrypted', ballotBoxesDecrypted)
+    const totalBallot: number[] = await BSGS2(ballotBoxesDecrypted)
+    console.log('totalBallot', totalBallot)
     return totalBallot
   }, [proposal])
 
   return getWinner
 }
 
+export const useResults = (proposalId: number) => {
+  const proposal = useProposalData(proposalId)
+  const results = useMemo(() => {
+    if (!proposal) return []
+    return proposal.results
+  }, [proposal])
+  return results
+}
+
 export const useWinner = (proposalId: number) => {
   const proposal = useProposalData(proposalId)
   const winner = useMemo(() => {
     if (!proposal) return ''
-    const { endDate, candidates } = proposal
+    const { endDate, results } = proposal
 
     const end = Number(endDate) * 1000
     if (Date.now() < end) return ''

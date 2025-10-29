@@ -12,7 +12,7 @@ import configuration from 'config/configuration'
     ConfigModule.forRoot({ isGlobal: true, load: [configuration] }),
     HealthModule,
     StorageModule,
-    ECModule,
+    // ECModule,
   ],
   controllers: [],
   providers: [],

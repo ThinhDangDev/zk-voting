@@ -47,9 +47,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
             </div>
           </WalletProvider>
         </UiProvider>
-        <footer className="sticky bottom-0 z-10">
+        {/* <footer className="sticky bottom-0 z-10">
           <Footer />
-        </footer>
+        </footer> */}
       </body>
     </html>
   )

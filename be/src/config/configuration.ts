@@ -13,7 +13,7 @@ const configuration = () => ({
   },
   storage: {
     maxSize: '5000000', // 5MB
-    bucket: 'atbash',
+    bucket: 'zk-voting',
     supabaseURL: process.env.SUPABASE_URL || '',
     supabaseKEY: process.env.SUPABASE_KEY || '',
   },

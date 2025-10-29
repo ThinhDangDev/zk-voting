@@ -12,6 +12,8 @@ type ProposalCardProps = {
 
 export default function ProposalCard({ proposalId }: ProposalCardProps) {
   const { metadata, isLoading } = useMetadata(proposalId)
+
+  console.log("metadata", metadata)
   const receipt = useReceipt(proposalId)
   const { proposalMetadata } = metadata || {
     proposalMetadata: { title: '', description: '', image: '' },

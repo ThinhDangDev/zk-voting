@@ -161,7 +161,7 @@ export class ZkVoting {
     proposal.ballotBoxes.forEach(([x, y], i) => {
       const C = new secp256k1.Point(x, y, 1n)
       const R = P.multiply(proposal.randomNumbers[i])
-      const M = C.subtract(R.multiply(privateKey)) //M = C - R * x
+      const M = C.subtract(R.multiply(BigInt(proposal.commitment))) //M = C - R * x
       ballotBoxesDecrypted.push(M)
     })
     const totalBallot: number[] = await BSGS(ballotBoxesDecrypted)

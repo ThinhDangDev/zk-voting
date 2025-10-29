@@ -66,12 +66,15 @@ export const fileToBase64 = (
   }
 }
 
-export const randomNumber = () => {
-  const r = secp256k1.utils.randomBytes(16)
-  return secp256k1.utils.mod(
-    BigInt(`0x${secp256k1.utils.bytesToHex(r)}`),
-    secp256k1.CURVE.P,
+export const privateKey =
+  BigInt(
+    49360424492151327609744179530990798614627223631512818354400676568443765553532,
   )
+
+export const randomNumber = () => {
+  const r = secp256k1.etc.randomBytes(16)
+  const curve = (secp256k1.Point.BASE.constructor as any).CURVE()
+  return secp256k1.etc.mod(BigInt(`0x${secp256k1.etc.bytesToHex(r)}`), curve.n)
 }
 
 /**
@@ -95,6 +98,24 @@ export const BSGS = async (points: secp256k1.Point[], total: number) => {
         break
       }
       if (P.multiply(j).equals(G)) {
+        result.push(j)
+        break
+      }
+    }
+  }
+  return result
+}
+
+export const BSGS2 = async (points: secp256k1.Point[]) => {
+  const P = secp256k1.Point.BASE
+  const result: number[] = []
+  for (const G of points) {
+    for (let j = 1; j <= 100; j++) {
+      if (secp256k1.Point.ZERO.equals(G)) {
+        result.push(0)
+        break
+      }
+      if (P.multiply(BigInt(j)).equals(G)) {
         result.push(j)
         break
       }

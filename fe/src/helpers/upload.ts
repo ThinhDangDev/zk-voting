@@ -1,20 +1,28 @@
 import axios from 'axios'
 import { decode, encode } from 'bs58'
+import { apiConfig } from '@/configs/env'
 
 export const uploadFileToSupabase = async (file: File) => {
   const formData = new FormData()
   formData.append('file', file)
 
-  const { data } = await axios.post(
-    'https://atbash-system.onrender.com/storage/upload',
-    formData,
-    {
-      headers: {
-        'Content-Type': 'multipart/form-data',
+  try {
+    const { data } = await axios.post(
+      `${apiConfig.baseUrl}/storage/upload`,
+      formData,
+      {
+        headers: {
+          'Content-Type': 'multipart/form-data',
+        },
       },
-    },
-  )
-  return data.cid as string
+    )
+    return data.cid as string
+  } catch (error: any) {
+    console.error('Upload error:', error.response?.data || error.message)
+    throw new Error(
+      `Upload failed: ${error.response?.data?.message || error.message}`,
+    )
+  }
 }
 
 const NULL = Buffer.from('00', 'hex')
@@ -32,7 +40,9 @@ const decodeExtension = (cid: string) => {
 
 export const toFilename = (cid: string) => {
   const extension = decodeExtension(cid)
-  const content = Buffer.from(decode(cid).subarray(0, CONTENT_LENGTH))
+  const content = new Uint8Array(
+    Buffer.from(decode(cid).subarray(0, CONTENT_LENGTH)),
+  )
   return `${encode(content)}.${extension}`
 }
 

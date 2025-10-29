@@ -1,10 +1,13 @@
-import { Leaf, MerkleDistributor } from 'atbash-evm'
+import {
+  Leaf as ZKLeaf,
+  MerkleDistributor as ZKMerkleDistributor,
+} from '@thinhdang1402/zk-voting'
 import { useMemo } from 'react'
 
 export const useMerkleDistributor = (voters: string[]) => {
   const merkleDistributor = useMemo(() => {
-    const leafs = voters.map((voter) => new Leaf(voter))
-    const merkleDistributor = new MerkleDistributor(leafs)
+    const leafs = voters.map((voter) => new ZKLeaf(voter))
+    const merkleDistributor = new ZKMerkleDistributor(leafs)
     return merkleDistributor
   }, [voters])
 
