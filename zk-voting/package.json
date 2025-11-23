@@ -12,7 +12,7 @@
     "clean": "rm -rf ./dist",
     "build": "yarn clean hardhat compile && tsc",
     "test:lib": "yarn build && hardhat test test/lib.test.ts",
-    "test:contract": "hardhat test test/Atbash.ts",
+    "test:contract": "hardhat test test/ZkVoting.ts",
     "docs": "typedoc --excludePrivate --excludeProtected ./index.ts",
     "ci:docs": "yarn docs && gh-pages -d docs"
   },

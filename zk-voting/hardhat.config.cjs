@@ -1,10 +1,23 @@
-import { HardhatUserConfig } from 'hardhat/config'
-import { Wallet } from 'ethers'
-import '@nomicfoundation/hardhat-toolbox'
-import 'hardhat-abi-exporter'
-import 'dotenv/config'
+require('@nomicfoundation/hardhat-toolbox')
+require('hardhat-abi-exporter')
+require('dotenv/config')
+const { Wallet } = require('ethers')
 
-const config: HardhatUserConfig = {
+// Configure ts-node for TypeScript test files with ESM support
+require('ts-node').register({
+  transpileOnly: true,
+  project: './tsconfig.hardhat.json',
+  compilerOptions: {
+    module: 'commonjs',
+    esModuleInterop: true,
+    allowSyntheticDefaultImports: true,
+  },
+  // Enable ESM interop for packages like @noble/secp256k1
+  experimentalSpecifierResolution: 'node',
+})
+
+/** @type {import('hardhat/config').HardhatUserConfig} */
+const config = {
   solidity: '0.8.19',
   abiExporter: {
     path: './abi',
@@ -48,6 +61,11 @@ const config: HardhatUserConfig = {
     },
   },
   // defaultNetwork: 'victionTestnet',
+  mocha: {
+    require: ['ts-node/register'],
+    timeout: 40000,
+    loader: 'ts-node/esm',
+  },
 }
 
-export default config
+module.exports = config
