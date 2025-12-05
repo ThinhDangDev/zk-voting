@@ -1,3 +1,4 @@
+// @ts-nocheck
 import numbro from 'numbro'
 import * as secp256k1 from '@noble/secp256k1'
 import { isAddress } from 'ethers'

@@ -11,7 +11,6 @@ import {
   useGetWinner,
   useMetadata,
   useProposalData,
-  useResults,
   useWinner,
 } from '@/hooks/atbash'
 

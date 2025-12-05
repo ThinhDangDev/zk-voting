@@ -2,7 +2,6 @@ import type { Metadata, Viewport } from 'next'
 
 import UiProvider from '@/providers/ui.provider'
 import WalletProvider from '@/providers/wallet.provider'
-import { Footer } from './footer'
 
 const title = 'Atbash | ZK Voting'
 const description =

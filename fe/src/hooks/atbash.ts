@@ -19,7 +19,7 @@ import {
 } from '@thinhdang1402/zk-voting'
 import { createGlobalState, useAsync } from 'react-use'
 import { CandidateMetadata, InitProposalProps, Proposal } from '@/types'
-import { BSGS, BSGS2, decrypt, privateKey, randomNumber } from '@/helpers/utils'
+import { BSGS2, privateKey, randomNumber } from '@/helpers/utils'
 import { toFilename, uploadFileToSupabase } from '@/helpers/upload'
 import { useMerkleDistributor } from './merkle'
 import { usePubkey } from './identity'
@@ -27,7 +27,6 @@ import ZKVotingAbi from '@/static/abi/ZKVoting.json'
 import { DEFAULT_PROPOSAL } from '@/constants'
 import { config } from '@/configs/contract'
 import { JsonRpcProvider } from 'ethers'
-import { ZkVoting } from '@thinhdang1402/zk-voting'
 
 export const useAtbashContract = () => {
   const atbash = useMemo((): {
@@ -351,7 +350,7 @@ export const useWinner = (proposalId: number) => {
   const proposal = useProposalData(proposalId)
   const winner = useMemo(() => {
     if (!proposal) return ''
-    const { endDate, results } = proposal
+    const { endDate } = proposal
 
     const end = Number(endDate) * 1000
     if (Date.now() < end) return ''
