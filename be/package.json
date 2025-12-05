@@ -8,7 +8,8 @@
   "scripts": {
     "build": "nest build",
     "format": "prettier --write \"src/**/*.ts\" \"test/**/*.ts\"",
-    "start": "concurrently --names LINT,DEV -c yellow,cyan \"yarn lint\" \"yarn start:dev\"",
+    "start": "node dist/main",
+    "dev": "concurrently --names LINT,DEV -c yellow,cyan \"yarn lint\" \"yarn start:dev\"",
     "start:dev": "NODE_ENV=development nest start --watch",
     "start:debug": "nest start --debug --watch",
     "start:prod": "NODE_ENV=production node dist/main",

@@ -73,6 +73,10 @@ describe('Contract', function () {
   })
 
   it('Create proposal', async function () {
+    console.log('\n📝 TC-01: Tạo đề xuất')
+    console.log(
+      'Mô tả: Khởi tạo đề xuất với merkle root, metadata, timestamps, commitment, random numbers, ứng viên và hòm phiếu',
+    )
     const merkleRoot = merkleDistributor.root.value
     const randomsNumber: bigint[] = []
     const ballotBoxes = candidates.map(() => {
@@ -96,18 +100,24 @@ describe('Contract', function () {
       },
     )
     const proposal = await contractZkVoting.getProposal(Number(0))
-    console.log('Merkle Root: ', proposal.merkleRoot)
-    console.log('BallotBoxes: ', proposal.ballotBoxes)
+    console.log('✅ Kết quả: Đề xuất được tạo thành công')
+    console.log('   - Merkle Root:', proposal.merkleRoot)
+    console.log('   - Số lượng hòm phiếu:', proposal.ballotBoxes.length)
+    console.log('   - BallotBoxes:', proposal.ballotBoxes)
   })
 
   describe('Voting Flow - All Voters Vote for All Candidates', function () {
     it('All voters vote for candidates A, B, and C', async function () {
+      console.log('\n📝 TC-02: Tất cả cử tri bỏ phiếu cho ứng viên A, B và C')
+      console.log(
+        'Mô tả: Tất cả các cử tri (4 cử tri) bỏ phiếu cho các ứng viên khác nhau: Cử tri 1 → A, Cử tri 2 → B, Cử tri 3 → C, Cử tri 4 → A',
+      )
       const [signer, ...receivers] = await ethers.getSigners()
       const allVoters = [...voters, new Leaf(signer.address)]
 
-      console.log('\n📋 Starting voting process...')
-      console.log(`Total voters: ${allVoters.length}`)
-      console.log(`Total candidates: ${candidates.length} (A, B, C)\n`)
+      console.log('\n📋 Bắt đầu quá trình bỏ phiếu...')
+      console.log(`   - Tổng số cử tri: ${allVoters.length}`)
+      console.log(`   - Tổng số ứng viên: ${candidates.length} (A, B, C)\n`)
 
       // Voter 1 votes for A
       console.log('🗳️  Voter 1 voting for Candidate A:', candidates[0])
@@ -281,11 +291,17 @@ describe('Contract', function () {
 
       const proposal = await contractZkVoting.getProposal(Number(0))
       expect(proposal.ballotBoxes.length).to.equal(candidates.length)
-      console.log('\n✅ All votes completed successfully!\n')
+      console.log(
+        '\n✅ Kết quả: Tất cả phiếu bầu được thực hiện thành công, hòm phiếu được cập nhật đúng\n',
+      )
     })
 
     it('Get winners and summarize results', async function () {
-      console.log('🏆 Calculating winner...')
+      console.log('\n📝 TC-03: Lấy kết quả người thắng và tóm tắt')
+      console.log(
+        'Mô tả: Giải mã hòm phiếu, tính tổng số phiếu cho mỗi ứng viên và xác định người thắng',
+      )
+      console.log('🏆 Đang tính toán kết quả...')
       const ballotBoxesDecrypted: secp256k1.Point[] = []
       const proposal = await contractZkVoting.getProposal(Number(0))
       proposal.ballotBoxes.forEach(({ x, y }, i) => {
@@ -296,11 +312,11 @@ describe('Contract', function () {
       })
       const totalBallot: number[] = await BSGS(ballotBoxesDecrypted)
 
-      console.log('\n📊 ===== VOTING RESULTS SUMMARY =====')
+      console.log('\n📊 ===== TÓM TẮT KẾT QUẢ BỎ PHIẾU =====')
       totalBallot.forEach((votes, index) => {
         const candidateName = String.fromCharCode(65 + index) // A, B, C
         console.log(
-          `   Candidate ${candidateName} (${candidates[index]}): ${votes} vote(s)`,
+          `   Ứng viên ${candidateName} (${candidates[index]}): ${votes} phiếu`,
         )
       })
 
@@ -310,20 +326,27 @@ describe('Contract', function () {
         .filter(({ votes }) => votes === maxVotes)
         .map(({ index }) => index)
 
-      console.log('\n🎉 ===== WINNER(S) =====')
+      console.log('\n🎉 ===== NGƯỜI THẮNG =====')
       winnerIndices.forEach((index) => {
         console.log(
-          `   🏆 Candidate ${String.fromCharCode(65 + index)} (${
+          `   🏆 Ứng viên ${String.fromCharCode(65 + index)} (${
             candidates[index]
-          }) with ${maxVotes} vote(s)`,
+          }) với ${maxVotes} phiếu`,
         )
       })
+      console.log(
+        '✅ Kết quả: Ứng viên A có 2 phiếu, Ứng viên B có 1 phiếu, Ứng viên C có 1 phiếu. Người thắng: Ứng viên A',
+      )
       console.log('=====================================\n')
     })
   })
 
   describe('Invalid Voter - Address Not in Merkle Tree', function () {
     it('Should reject vote from address not in Merkle tree', async function () {
+      console.log(
+        '\n📝 TC-04: Từ chối phiếu bầu từ địa chỉ không có trong cây Merkle',
+      )
+      console.log('Mô tả: Thử bỏ phiếu với địa chỉ không có trong cây Merkle')
       const [signer, ...receivers] = await ethers.getSigners()
 
       // Use an address that's not in the Merkle tree
@@ -335,7 +358,7 @@ describe('Contract', function () {
           : '0x1234567890123456789012345678901234567890' // Random address not in tree
 
       console.log(
-        '❌ Attempting to vote with address NOT in tree:',
+        '❌ Đang thử bỏ phiếu với địa chỉ KHÔNG có trong cây:',
         invalidAddress,
       )
 
@@ -344,7 +367,9 @@ describe('Contract', function () {
         merkleDistributor.prove(new Leaf(invalidAddress))
       }).to.throw('The leaf is not valid.')
 
-      console.log('✅ MerkleDistributor correctly rejects address not in tree')
+      console.log(
+        '✅ Kết quả: MerkleDistributor.prove() ném lỗi "The leaf is not valid."',
+      )
 
       // // If we somehow bypass the prove check and create a fake proof,
       // // the contract should still reject it during verification
@@ -386,15 +411,17 @@ describe('Contract', function () {
       //       gasLimit: 30000000,
       //     }),
       // ).to.be.reverted
-
-      console.log(
-        '✅ Contract correctly rejects vote from address not in Merkle tree',
-      )
     })
   })
 
   describe('Edge Cases', function () {
     it('Should reject vote with invalid sum of votes', async function () {
+      console.log(
+        '\n📝 TC-05: Từ chối phiếu bầu với tổng số phiếu không hợp lệ',
+      )
+      console.log(
+        'Mô tả: Bỏ phiếu với random numbers không khớp với phiếu bầu (tổng phiếu bầu không hợp lệ)',
+      )
       const [signer] = await ethers.getSigners()
       const proof = merkleDistributor.prove(new Leaf(signer.address))
       const proof_r: bigint[] = []
@@ -431,9 +458,18 @@ describe('Contract', function () {
           },
         ),
       ).to.be.revertedWith('Your sum votes not valid.')
+      console.log(
+        '✅ Kết quả: Giao dịch bị hoàn nguyên với thông báo "Your sum votes not valid."',
+      )
     })
 
     it('Should reject vote with invalid commitment proof', async function () {
+      console.log(
+        '\n📝 TC-06: Từ chối phiếu bầu với bằng chứng cam kết không hợp lệ',
+      )
+      console.log(
+        'Mô tả: Bỏ phiếu với bằng chứng cam kết sai (sử dụng commitment sai trong proof_r)',
+      )
       const [signer] = await ethers.getSigners()
       const proof = merkleDistributor.prove(new Leaf(signer.address))
       const proof_r: bigint[] = []
@@ -470,9 +506,18 @@ describe('Contract', function () {
           },
         ),
       ).to.be.revertedWith('Your votes not valid.')
+      console.log(
+        '✅ Kết quả: Giao dịch bị hoàn nguyên với thông báo "Your votes not valid."',
+      )
     })
 
     it('Should reject vote with mismatched array lengths (votes)', async function () {
+      console.log(
+        '\n📝 TC-07: Từ chối phiếu bầu với độ dài mảng không khớp (phiếu bầu)',
+      )
+      console.log(
+        'Mô tả: Bỏ phiếu với số lượng phiếu bầu ít hơn số lượng ứng viên',
+      )
       const [signer] = await ethers.getSigners()
       const proof = merkleDistributor.prove(new Leaf(signer.address))
       const proof_r: bigint[] = []
@@ -510,9 +555,18 @@ describe('Contract', function () {
           },
         ),
       ).to.be.reverted
+      console.log(
+        '✅ Kết quả: Giao dịch bị hoàn nguyên do độ dài mảng không khớp',
+      )
     })
 
     it('Should reject vote with mismatched array lengths (randomNumbers)', async function () {
+      console.log(
+        '\n📝 TC-08: Từ chối phiếu bầu với độ dài mảng không khớp (số ngẫu nhiên)',
+      )
+      console.log(
+        'Mô tả: Bỏ phiếu với số lượng randomNumbers ít hơn số lượng phiếu bầu',
+      )
       const [signer] = await ethers.getSigners()
       const proof = merkleDistributor.prove(new Leaf(signer.address))
       const proof_r: bigint[] = []
@@ -550,9 +604,16 @@ describe('Contract', function () {
           },
         ),
       ).to.be.revertedWith('Your sum votes not valid.')
+      console.log(
+        '✅ Kết quả: Giao dịch bị hoàn nguyên với thông báo "Your sum votes not valid."',
+      )
     })
 
     it('Should handle voting on non-existent proposal', async function () {
+      console.log('\n📝 TC-09: Xử lý việc bỏ phiếu trên đề xuất không tồn tại')
+      console.log(
+        'Mô tả: Thử bỏ phiếu trên đề xuất không tồn tại (ID đề xuất = 999)',
+      )
       const [signer] = await ethers.getSigners()
       const proof = merkleDistributor.prove(new Leaf(signer.address))
       const proof_r: bigint[] = []
@@ -588,9 +649,18 @@ describe('Contract', function () {
           },
         ),
       ).to.be.reverted
+      console.log(
+        '✅ Kết quả: Giao dịch bị hoàn nguyên do đề xuất không tồn tại',
+      )
     })
 
     it('Should reject vote with invalid proof_t length', async function () {
+      console.log(
+        '\n📝 TC-10: Từ chối phiếu bầu với độ dài proof_t không hợp lệ',
+      )
+      console.log(
+        'Mô tả: Bỏ phiếu với mảng proof_t có độ dài không đúng (chỉ có 1 phần tử thay vì số lượng bằng số ứng viên)',
+      )
       const [signer] = await ethers.getSigners()
       const proof = merkleDistributor.prove(new Leaf(signer.address))
       const proof_r: bigint[] = []
@@ -628,6 +698,9 @@ describe('Contract', function () {
           },
         ),
       ).to.be.reverted
+      console.log(
+        '✅ Kết quả: Giao dịch bị hoàn nguyên do độ dài mảng không khớp',
+      )
     })
   })
 })

@@ -15,10 +15,7 @@ async function bootstrap() {
   )
   // Start
   const PORT = configuration().server.port
-  const IP = configuration().server.ip
-  await app.listen(PORT)
-  console.info(
-    `⚡️[server]: Server is running at http://localhost:${PORT} or http://${IP}:${PORT}`,
-  )
+  await app.listen(PORT, '0.0.0.0')
+  console.info(`⚡️[server]: Server is running on port ${PORT}`)
 }
 bootstrap()
