@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: atbash-api
+    runtime: node
+    rootDir: be
+    buildCommand: yarn install && yarn build
+    startCommand: yarn start:prod
+    envVars:
+      - key: NODE_ENV
+        value: production
