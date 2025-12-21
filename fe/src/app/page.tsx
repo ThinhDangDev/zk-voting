@@ -11,9 +11,7 @@ import { useProposalCount } from '@/hooks/atbash'
 
 export default function Home() {
   const { amount } = useProposalCount()
-  const proposals = Array.from(Array(amount).keys())
-    .reverse()
-    .filter((e) => e !== 3)
+  const proposals = Array.from(Array(amount).keys()).reverse()
   return (
     <Island>
       <div className="flex flex-col gap-6 pb-6">
