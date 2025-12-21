@@ -86,7 +86,7 @@ export const randomNumber = () => {
  */
 export const tomoscan = (addressOrTxId: string): string => {
   const pathname = isAddress(addressOrTxId) ? 'address' : 'tx'
-  return `https://testnet.tomoscan.io/${pathname}/${addressOrTxId}`
+  return `https://sepolia.etherscan.io/${pathname}/${addressOrTxId}`
 }
 
 export const BSGS = async (points: secp256k1.Point[], total: number) => {
