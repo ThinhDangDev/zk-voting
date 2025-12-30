@@ -28,7 +28,6 @@ export default function GetResult({ proposalId }: GetResultProps) {
   const { metadata } = useMetadata(proposalId)
   const winner = useWinner(proposalId)
 
-  console.log('isGetResult', isGetResult)
   // Get candidate addresses from metadata
   const candidateAddresses = Object.keys(
     metadata?.proposalMetadata?.candidateMetadata || {},
@@ -37,12 +36,13 @@ export default function GetResult({ proposalId }: GetResultProps) {
   const [result, setResult] = useState<number[]>(
     Array(candidateAddresses.length).fill(0),
   )
+
   const maxResult = useMemo(() => Math.max(...result), [result])
   const onGetWinner = useCallback(async () => {
     try {
       setLoading(true)
       const result = await getWinner()
-      setResult(result)
+      setResult(result.reverse())
       setIsGetResult(true)
       pushMessage('alert-success', 'Get result successfully')
     } catch (er: any) {
@@ -81,6 +81,7 @@ export default function GetResult({ proposalId }: GetResultProps) {
                   proposalId={Number(proposalId)}
                   result={result[i]}
                   active={!!result[i] && result[i] === maxResult}
+                  key={address}
                 />
               </div>
             ))}
